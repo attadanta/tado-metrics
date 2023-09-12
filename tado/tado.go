@@ -47,7 +47,7 @@ func BearerCode(tadoClient *http.Client, username, password, clientSecret string
 		log.Fatal(getErr)
 	}
 
-	m := jsonResponse(res)
+	m := jsonObjectResponse(res)
 	return m["access_token"].(string)
 }
 
@@ -62,7 +62,7 @@ func HomeId(tadoClient *http.Client, accessToken string) int {
 	if getErr != nil {
 		log.Fatal(getErr)
 	}
-	m := jsonResponse(res)
+	m := jsonObjectResponse(res)
 	return int(m["homeId"].(float64))
 }
 
@@ -114,7 +114,7 @@ func ZoneInfo(tadoClient *http.Client, accessToken string, homeId int, zone Tado
 		log.Fatal(getErr)
 	}
 
-	m := jsonResponse(res)
+	m := jsonObjectResponse(res)
 
 	var zoneInfo TadoZoneInfo
 	power := false
@@ -153,7 +153,7 @@ func ZoneInfo(tadoClient *http.Client, accessToken string, homeId int, zone Tado
 	return zoneInfo
 }
 
-func jsonResponse(res *http.Response) map[string]interface{} {
+func jsonObjectResponse(res *http.Response) map[string]interface{} {
 	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)

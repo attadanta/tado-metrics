@@ -1,16 +1,23 @@
 package main
 
 import (
+	"log"
 	"net/http"
 	"os"
 	"time"
 
 	"github.com/attadanta/tado-metrics/cloudwatch"
 	"github.com/attadanta/tado-metrics/tado"
+	"github.com/joho/godotenv"
 )
 
 
 func main() {
+	err := godotenv.Load()
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
 	username := os.Getenv("TADO_USERNAME")
 	password := os.Getenv("TADO_PASSWORD")
 	clientSecret := os.Getenv("TADO_CLIENT_SECRET")

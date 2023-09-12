@@ -13,7 +13,7 @@ build:
 
 .PHONY: package
 package: build
-	tar -cvzf tado-metrics.tar.gz tado-metrics service.env INSTALL.sh
+	tar -cvzf tado-metrics.tar.gz tado-metrics .env
 
 .PHONY: clean
 clean:

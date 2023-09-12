@@ -4,8 +4,8 @@ GO ?= go
 VERSION ?= $(GITSHORTHASH)
 
 # Insert build metadata into binary
-LDFLAGS := -X github.com/teabot/tado-metrics/cmd.TadoMetricsVersion=$(VERSION)
-LDFLAGS += -X github.com/teabot/tado-metrics/cmd.TadoMetricsGitCommit=$(GITSHORTHASH)
+LDFLAGS := -X github.com/attadanta/tado-metrics/cmd.TadoMetricsVersion=$(VERSION)
+LDFLAGS += -X github.com/attadanta/tado-metrics/cmd.TadoMetricsGitCommit=$(GITSHORTHASH)
 
 .PHONY: test
 test:

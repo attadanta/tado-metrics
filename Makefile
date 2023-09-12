@@ -1,4 +1,3 @@
-
 SHELL=/bin/bash
 GITSHORTHASH=$(shell git log -1 --pretty=format:%h)
 GO ?= go

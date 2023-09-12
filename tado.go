@@ -2,7 +2,8 @@ package main
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"context"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -12,8 +13,9 @@ import (
 	"strings"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/aws/external"
+	"github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/aws-sdk-go-v2/service/cloudwatch"
+	"github.com/aws/aws-sdk-go-v2/service/cloudwatch/types"
 )
 
 // https://shkspr.mobi/blog/2019/02/tado-api-guide-updated-for-2019/
@@ -84,7 +86,7 @@ func zones(tadoClient *http.Client, accessToken string, homeId int) []TadoZone {
 		log.Fatal(getErr)
 	}
 
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)
 	}
@@ -160,7 +162,7 @@ func zoneInfo(tadoClient *http.Client, accessToken string, homeId int, zone Tado
 }
 
 func jsonResponse(res *http.Response) map[string]interface{} {
-	body, readErr := ioutil.ReadAll(res.Body)
+	body, readErr := io.ReadAll(res.Body)
 	if readErr != nil {
 		log.Fatal(readErr)
 	}
@@ -199,52 +201,51 @@ func main() {
 	}
 
 	for _, zoneInfo := range zoneInfos {
-		metricsData := make([]cloudwatch.MetricDatum, 0)
+		metricsData := make([]types.MetricDatum, 0)
 		if zoneInfo.Power {
-			metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "setpoint", cloudwatch.StandardUnitNone, zoneInfo.SetPoint)
+			metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "setpoint", types.StandardUnitNone, zoneInfo.SetPoint)
 		}
-		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "temperature", cloudwatch.StandardUnitNone, zoneInfo.Temperature)
-		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "humidity", cloudwatch.StandardUnitPercent, zoneInfo.Humidity)
-		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "demand", cloudwatch.StandardUnitPercent, zoneInfo.Demand)
+		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "temperature", types.StandardUnitNone, zoneInfo.Temperature)
+		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "humidity", types.StandardUnitPercent, zoneInfo.Humidity)
+		metricsData = appendMetricDatum(metricsData, zoneInfo.Zone.Name, "demand", types.StandardUnitPercent, zoneInfo.Demand)
 		publishMetrics(metricsData, "Tado")
 	}
 
 	//fmt.Println(zoneInfos)
 }
 
-func publishMetrics(metricData []cloudwatch.MetricDatum, namespace string) {
-	cfg, err := external.LoadDefaultAWSConfig()
+func publishMetrics(metricData []types.MetricDatum, namespace string) {
+	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
 		log.Fatal("failed to load config, %v", err)
 		panic("")
 	}
 
-	svc := cloudwatch.New(cfg)
-	req := svc.PutMetricDataRequest(&cloudwatch.PutMetricDataInput{
+	cw := cloudwatch.NewFromConfig(cfg)
+	_, err = cw.PutMetricData(context.TODO(), &cloudwatch.PutMetricDataInput{
 		MetricData: metricData,
 		Namespace:  &namespace,
 	})
-	_, err = req.Send()
 	if err != nil {
 		log.Fatal(err)
 	}
 }
 
-func appendMetricDatum(data []cloudwatch.MetricDatum, room, name string, unit cloudwatch.StandardUnit, value float64) []cloudwatch.MetricDatum {
+func appendMetricDatum(data []types.MetricDatum, room, name string, unit types.StandardUnit, value float64) []types.MetricDatum {
 	md := createMetricDatum(room, name, unit, value)
 	return append(data, md)
 }
 
-func createMetricDatum(room, name string, unit cloudwatch.StandardUnit, value float64) cloudwatch.MetricDatum {
+func createMetricDatum(room, name string, unit types.StandardUnit, value float64) types.MetricDatum {
 	n := "room"
 
 	re := regexp.MustCompile("[[:^ascii:]]")
 	r := re.ReplaceAllLiteralString(room, "")
 	r = strings.Replace(r, " ", "", -1)
 
-	return cloudwatch.MetricDatum{
-		Dimensions: []cloudwatch.Dimension{
-			cloudwatch.Dimension{
+	return types.MetricDatum{
+		Dimensions: []types.Dimension{
+			types.Dimension{
 				Name:  &n,
 				Value: &r,
 			},

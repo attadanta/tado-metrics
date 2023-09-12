@@ -7,22 +7,14 @@ VERSION ?= $(GITSHORTHASH)
 LDFLAGS := -X github.com/attadanta/tado-metrics/cmd.TadoMetricsVersion=$(VERSION)
 LDFLAGS += -X github.com/attadanta/tado-metrics/cmd.TadoMetricsGitCommit=$(GITSHORTHASH)
 
-.PHONY: test
-test:
-	$(GO) test $(shell go list ./... | grep -v /vendor/)
-
 .PHONY: build
-build: dep
-	env GOOS=linux GOARCH=arm GOARM=5 $(GO) build -ldflags "$(LDFLAGS)" -o "tado-metrics"
+build:
+	env GOOS=linux GOARCH=arm GOARM=5 $(GO) build -ldflags "$(LDFLAGS)" -o "tado-metrics" main/tado.go
 
 .PHONY: package
-package: build test
+package: build
 	tar -cvzf tado-metrics.tar.gz tado-metrics service.env INSTALL.sh
 
 .PHONY: clean
 clean:
 	rm -rf tado-metrics.tar.gz tado-metrics
-
-.PHONY: dep
-dep:
-	dep ensure -vendor-only

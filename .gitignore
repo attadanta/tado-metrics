@@ -10,12 +10,9 @@
 # End of https://www.gitignore.io/api/go
 
 road-cruise-control
-Gopkg.lock
 /vendor
 .vscode
 /bin/
-.AppleDouble
-env.sh
 *.service.env
 tado-metrics
 tado-metrics.tar.gz

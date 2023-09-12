@@ -1,12 +1,12 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"os"
 	"time"
 
-	"github.com/attadanta/tado-metrics/cloudwatch"
 	"github.com/attadanta/tado-metrics/tado"
 	"github.com/joho/godotenv"
 )
@@ -35,11 +35,6 @@ func main() {
 		zoneInfos = append(zoneInfos, zoneInfo)
 	}
 
-	for _, zoneInfo := range zoneInfos {
-		metricsData := cloudwatch.CollectMetricsData(zoneInfo)
-		cloudwatch.PublishMetrics(metricsData, "Tado")
-	}
-
-	//fmt.Println(zoneInfos)
+	fmt.Println(zoneInfos)
 }
 

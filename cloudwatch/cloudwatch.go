@@ -26,7 +26,7 @@ func CollectMetricsData(zoneInfo tado.TadoZoneInfo) []types.MetricDatum {
 func PublishMetrics(metricData []types.MetricDatum, namespace string) {
 	cfg, err := config.LoadDefaultConfig(context.TODO())
 	if err != nil {
-		log.Fatal("failed to load config, %v", err)
+		log.Fatalf("failed to load config, %v", err)
 		panic("")
 	}
 
